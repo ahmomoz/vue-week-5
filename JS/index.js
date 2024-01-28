@@ -1,1 +1,1 @@
-window.location.href = "products.html";
+window.location.href = "cart.html";

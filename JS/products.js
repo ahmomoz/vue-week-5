@@ -76,6 +76,15 @@ const app = createApp({
         hideDeleteModal() {
             myDeleteModal.hide();
         },
+        getOrderList(){  // 取得訂單資料
+            axios.get(`${this.url}/api/${this.path}/orders`)
+            .then(res=>{
+                //console.log(res.data.orders)
+            })
+            .catch(err=>{
+                alert(err.response.data.message);
+            })
+        },
     },
     computed:{
         sortProducts() {
@@ -92,6 +101,7 @@ const app = createApp({
         this.checkAdmin(); //進行身分驗證函式 
         myProductModal = new bootstrap.Modal(document.getElementById('productModal'));
         myDeleteModal = new bootstrap.Modal(document.getElementById('delProductModal'));
+        this.getOrderList()
     },
     components:{
         CardPagination,
