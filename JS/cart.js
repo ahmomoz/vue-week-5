@@ -45,10 +45,16 @@ const app = Vue.createApp({
             axios.get(`${this.url}/api/${this.path}/products/all`)
             .then(res=>{
                 this.products = res.data.products;
-                this.isLoading = false;
+                
             })
             .catch(err=>{
-                alert(err.response.data.message);
+                Swal.fire({
+                    icon: "error",
+                    title: err.response.data.message,
+                });
+            })
+            .finally(()=>{
+                this.isLoading = false;
             })
         },
         getCartList(){  // 取得購物車產品資料
@@ -57,10 +63,15 @@ const app = Vue.createApp({
             .then(res=>{
                 this.cartList = res.data.data.carts;
                 this.totalPrice = res.data.data.total;
-                this.isLoading = false;
             })
             .catch(err=>{
-                alert(err);
+                Swal.fire({
+                    icon: "error",
+                    title: err,
+                });
+            })
+            .finally(()=>{
+                this.isLoading = false;
             })
         },
         openProductModal(product){      // 開啟Modal
@@ -77,13 +88,24 @@ const app = Vue.createApp({
             this.isLoading = true;
             axios.post(`${this.url}/api/${this.path}/cart`,item)
             .then(res=>{
-                this.isLoading = false;
-                alert("加入購物車成功");
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "成功加入購物車",
+                    showConfirmButton: false,
+                    timer: 700
+                });
                 myProductModal.hide();
                 this.getCartList();
             })
             .catch(err=>{
-                alert(err.response.data.message);
+                Swal.fire({
+                    icon: "error",
+                    title: err.response.data.message,
+                });
+            })
+            .finally(()=>{
+                this.isLoading = false;
             })
         },
         updateQty(product, event) {      //更新商品數量
@@ -100,30 +122,62 @@ const app = Vue.createApp({
                 this.getCartList(); 
             })
             .catch(err=>{
-                alert(err.response.data.message);
+                Swal.fire({
+                    icon: "error",
+                    title: err.response.data.message,
+                });
             })
         },
         deleteProduct(product){     //刪除某項產品
             this.isLoading = true;
             axios.delete(`${this.url}/api/${this.path}/cart/${product.id}`)
             .then(res=>{
-                alert(res.data.message);
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "已刪除",
+                    showConfirmButton: false,
+                    timer: 700
+                });
                 this.getCartList();
-                this.isLoading = false;
             })
             .catch(err=>{
-                alert(err.response.data.message);
+                Swal.fire({
+                    icon: "error",
+                    title: err.response.data.message,
+                });
+            })
+            .finally(()=>{
+                this.isLoading = false;
             })
         },
         deleteCart(){     //清空購物車
-            axios.delete(`${this.url}/api/${this.path}/carts`)
-            .then(res=>{
-                alert(res.data.message);
-                this.getCartList();
-            })
-            .catch(err=>{
-                alert(err.response.data.message);
-            })
+            Swal.fire({
+                title: "確定要清空購物車嗎？",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.delete(`${this.url}/api/${this.path}/carts`)
+                    .then(res=>{
+                        Swal.fire({
+                            title: "已清空購物車",
+                            icon: "success"
+                        });
+                        this.getCartList();
+                    })
+                    .catch(err=>{
+                        Swal.fire({
+                            icon: "error",
+                            title: err.response.data.message,
+                        });
+                    })
+                }
+            });
+            
         },
         addOrder(){    //送出訂單
             if(this.cartList.length>0 ){
@@ -131,8 +185,10 @@ const app = Vue.createApp({
                 this.isLoading = true;
                 axios.post(`${this.url}/api/${this.path}/order`,{ data: item })
                 .then(res=>{
-                    this.isLoading = false;
-                    alert("訂單送出成功");
+                    Swal.fire({
+                        title: "訂單送出成功",
+                        icon: "success"
+                    });
                     this.getCartList();
                     this.cartList='';
                     this.form=
@@ -147,15 +203,21 @@ const app = Vue.createApp({
                     };
                 })
                 .catch(err=>{
-                    alert(err.response.data.message);
+                    Swal.fire({
+                        icon: "error",
+                        title: err.response.data.message,
+                    });
+                })
+                .finally(()=>{
                     this.isLoading = false;
                 })
             }else{
-                alert("購物車不得為空")
+                Swal.fire({
+                    icon: "error",
+                    title: "購物車不得為空",
+                });
             }
         },
-        onSubmit(){
-        }
     },
     mounted() {
         this.getProductsList();

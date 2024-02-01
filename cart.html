@@ -7,6 +7,7 @@
 <title>購物車頁面</title>
 <link rel="stylesheet" href="./css/products.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body>
 <!--<Loading v-model:active="isLoading" -->
@@ -38,8 +39,8 @@
                         <td><del>$ {{ product.origin_price }}</del></td>
                         <td>$ {{ product.price }}</td>
                         <td>
-                        <button class="btn btn-outline-secondary" type=button @click="openProductModal(product)">查看更多</button>
-                        <button class="btn btn-outline-danger" type=button @click="addToCart(product)">加到購物車</button></td>
+                        <button class="btn btn-outline-secondary" type="button" @click="openProductModal(product)">查看更多</button>
+                        <button class="btn btn-outline-danger" type="button" @click="addToCart(product)">加到購物車</button></td>
                     </tr>
                     </tbody>
                 </table>
@@ -49,9 +50,9 @@
             </div>
             <!--購物車-->
             <div class="col-md-5"> 
-                <h2>商品購物車</h2>           
+                <h2>商品購物車</h2>      
                 <table class="table">
-                    <div class="text-end mb-2"><button class="btn btn-outline-danger" type=button @click="deleteCart">清空購物車</button></div>
+                    <div class="text-end mb-2" v-if="cartList.length>0"><button class="btn btn-outline-danger" type="button" @click="deleteCart">清空購物車</button></div>
                     <thead>
                     <tr>
                         <th></th>
@@ -63,13 +64,13 @@
                     </thead>
                     <tbody>
                     <tr  v-for="product in cartList" :key="product.id">
-                        <td><button class="btn btn-sm btn-outline-danger text-end" type=button @click="deleteProduct(product)">X</button></td>
+                        <td><button class="btn btn-sm btn-outline-danger text-end" type="button" @click="deleteProduct(product)">X</button></td>
                         <td>{{ product.product.title }}</td>
                         <td class="w-25">
                             <div class="input-group input-group-sm">
                                 <input :min="1" type="number" class="form-control" 
                                 :value="product.qty"
-                                @input="updateQty(product, $event)">
+                                @blur="updateQty(product, $event)">
                                 <span class="input-group-text" id="basic-addon2">{{ product.product.unit }}</span>
                             </div>
                         </td>
@@ -77,20 +78,22 @@
                         <td class="text-end">{{ product.final_total }}</td>
                     </tr>
                     </tbody>
-                    <tfoot>
+                    <tfoot v-if="cartList.length>0">
                         <tr>
                         <td colspan="4" class="text-end">總計</td>
                         <td class="text-end">{{ totalPrice }}</td>
                         </tr>
                     </tfoot>
-                </table></div>
+                </table>
+                <div v-if="cartList.length===0" class="text-white d-flex align-items-center justify-content-center" style="height:300px; background-color: rgba(94, 94, 94, 0.65); z-index: 100;">購物車目前沒有商品</div>     
             </div>
+        </div>
             <!--表單驗證-->
             <div class="col-md-6 mb-5">
                 <h2>建立訂單</h2>
-                <v-form ref="form" v-slot="{ errors }" @submit="onSubmit" >
+                <v-form ref="form" v-slot="{ errors }" @submit>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
+                        <label for="email" class="form-label">*Email</label>
                         <v-field id="email" name="email" type="email" class="form-control"
                         :class="{ 'is-invalid': errors['email'] }"
                         placeholder="請輸入 Email" rules="email|required" v-model="form.user.email"
@@ -98,21 +101,21 @@
                         <error-message name="email" class="invalid-feedback"></error-message>
                     </div>
                     <div class="mb-3">
-                        <label for="name" class="form-label">收件人姓名</label>
+                        <label for="name" class="form-label">*收件人姓名</label>
                         <v-field id="name" name="姓名" type="text" class="form-control" 
                         :class="{ 'is-invalid': errors['姓名'] }"
                         placeholder="請輸入姓名" rules="required" v-model="form.user.name"></v-field>
                         <error-message name="姓名" class="invalid-feedback"></error-message>
                     </div>
                     <div class="mb-3">
-                        <label for="tel" class="form-label">收件人電話</label>
+                        <label for="tel" class="form-label">*收件人電話</label>
                         <v-field id="tel" name="電話" type="text" class="form-control" 
                         :class="{ 'is-invalid': errors['電話'] }"
                         placeholder="請輸入電話" rules="required|min:8|max:10" v-model="form.user.tel"></v-field>
                         <error-message name="電話" class="invalid-feedback"></error-message>
                     </div>
                     <div class="mb-3">
-                        <label for="address" class="form-label">收件人地址</label>
+                        <label for="address" class="form-label">*收件人地址</label>
                         <v-field id="address" name="地址" type="text" class="form-control" 
                         :class="{ 'is-invalid': errors['地址'] }"
                         placeholder="請輸入地址" rules="required" v-model="form.user.address"></v-field>
@@ -148,6 +151,7 @@ https://cdn.jsdelivr.net/npm/vue-loading-overlay@6.0.3/dist/css/index.min.css
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vee-validate/4.12.4/vee-validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@vee-validate/rules@4.12.4/dist/vee-validate-rules.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@vee-validate/i18n@4.12.4/dist/vee-validate-i18n.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
 
 <script src="./JS/cart.js" type="module"></script>
 </body>
